@@ -7,13 +7,29 @@
 </head>
 <body>
     <h1>Get GPS Location</h1>
-    <button onclick="getLocation()">Get Location</button>
+    <button onclick="checkPermission()">Check Permission & Get Location</button>
     <p id="output"></p>
 
     <script>
+        function checkPermission() {
+            navigator.permissions.query({ name: "geolocation" }).then(function (result) {
+                if (result.state === "granted") {
+                    getLocation();
+                } else if (result.state === "prompt") {
+                    getLocation();
+                } else if (result.state === "denied") {
+                    document.getElementById("output").innerText = "Location permission is denied. Please enable it in settings.";
+                }
+            });
+        }
+
         function getLocation() {
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(showPosition, showError);
+                navigator.geolocation.getCurrentPosition(showPosition, showError, {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                });
             } else {
                 document.getElementById("output").innerText = "Geolocation is not supported by this browser.";
             }
@@ -32,7 +48,7 @@
                     message = "User denied the request for Geolocation.";
                     break;
                 case error.POSITION_UNAVAILABLE:
-                    message = "Location information is unavailable.";
+                    message = "Location information is unavailable. Make sure your GPS is turned on.";
                     break;
                 case error.TIMEOUT:
                     message = "The request to get user location timed out.";
